@@ -4,15 +4,6 @@
 A seguir estão algumas regras de negócio que são importantes para o funcionamento do micro serviço de transferencia simplificada:
 
 - Para ambos tipos de usuário, precisamos do Nome Completo, CPF, e-mail e Senha. CPF/CNPJ e e-mails devem ser únicos no sistema. Sendo assim, seu sistema deve permitir apenas um cadastro com o mesmo CPF ou endereço de e-mail;
-    ```
-    Indexar CPF/CNPJ e EMAIL separadamente
-    ```
-    ```
-    Brazil:
-    CPF: 14 digits (XXX.XXX.XXX-XX)
-    CNPJ: 18 digits (XX.XXX.XXX/XXXX-XX)
-    ```
-<br>
 
 - Usuários podem enviar dinheiro (efetuar transferência) para lojistas e entre usuários;
     ```mermaid
