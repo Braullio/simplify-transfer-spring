@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     payer BIGINT NOT NULL,
     payee BIGINT NOT NULL,
-    value NUMERIC(19, 2) NOT NULL,
+    amount NUMERIC(19, 2) NOT NULL,
 
     -- Regra para report para algumas estrategias futuras
     notified BOOLEAN DEFAULT FALSE,
