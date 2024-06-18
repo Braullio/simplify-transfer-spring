@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +15,9 @@ public class UserRepositoryTest {
     UserRepository userRepository;
 
 	@Test
-	@DisplayName("Check class Payer")
-	void checkPayer() {
+	@DisplayName("Verify creation Payer and consult")
+	void verifyPayer() {
+
 		Payer savedPayer = userRepository.save(new Payer(
 			"Pagador Teste",
 			"pagador.teste@example.com",
@@ -27,16 +27,16 @@ public class UserRepositoryTest {
 			new BigDecimal("50.00")
 		));
 
-		Optional<User> result = userRepository.findById(savedPayer.getId());
+		Optional<Payer> result = userRepository.findPayerById(savedPayer.getId());
 
 		assertThat(result.isPresent()).isTrue();
 		assertThat(result.get().getUserType()).isEqualTo(UserType.COMUM);
 	}
 
 	@Test
-	@DisplayName("Check class Payee")
-	void checkPayee() {
-		Payee savedPayer = userRepository.save(new Payee(
+	@DisplayName("Verify creation Payee and consult")
+	void verifyPayee() {
+		Payee savedPayee = userRepository.save(new Payee(
 			"Pagador Teste",
 			"pagador.teste@example.com",
 			"12345678901",
@@ -45,9 +45,26 @@ public class UserRepositoryTest {
 			new BigDecimal("50.00")
 		));
 
-		Optional<User> result = userRepository.findById(savedPayer.getId());
+		Optional<Payee> result = userRepository.findPayeeById(savedPayee.getId());
 
 		assertThat(result.isPresent()).isTrue();
 		assertThat(result.get().getUserType()).isEqualTo(UserType.LOJISTA);
+	}
+
+	@Test
+	@DisplayName("Verify creation of PAYER and see as PAYEE equals NULL")
+	void verifyPayerNotPayee() {
+		Payer savedPayer = userRepository.save(new Payer(
+			"Pagador Teste",
+			"pagador.teste@example.com",
+			"12345678901",
+			"1234hash",
+			"1234salt",
+			new BigDecimal("50.00")
+		));
+
+		Optional<Payee> result = userRepository.findPayeeById(savedPayer.getId());
+
+		assertThat(result.isPresent()).isFalse();
 	}
 }

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,26 +16,22 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-
+@Entity
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Entity(name="users")
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class User {
-
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class User {
 	@Id
 	@GeneratedValue(strategy= GenerationType.IDENTITY)
 	private Long id;
 
 	@Enumerated(EnumType.STRING)
+    @Column(name = "user_type", insertable = false, updatable = false)
 	private UserType userType;
 
 	@Column(name = "full_name", nullable = false)
@@ -55,7 +53,7 @@ public class User {
 	private BigDecimal balance;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
@@ -63,5 +61,15 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+	protected User(String fullName, String email, String taxNumber, String passwordHash, String passwordSalt, BigDecimal balance, UserType userType) {
+        this.fullName = fullName;
+        this.email = email;
+        this.taxNumber = taxNumber;
+        this.passwordHash = passwordHash;
+        this.passwordSalt = passwordSalt;
+        this.balance = balance;
+        this.userType = userType;
     }
 }
