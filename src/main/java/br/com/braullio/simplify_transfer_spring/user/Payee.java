@@ -6,10 +6,12 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@ToString
 @DiscriminatorValue("LOJISTA")
 public class Payee extends User {
     public Payee(String fullName, String email, String taxNumber, String passwordHash, String passwordSalt, BigDecimal balance) {

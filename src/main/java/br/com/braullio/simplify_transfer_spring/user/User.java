@@ -72,4 +72,16 @@ public abstract class User {
         this.balance = balance;
         this.userType = userType;
     }
+
+	public void debit(BigDecimal amount) {
+		if (balance.compareTo(amount) >= 0) {
+			balance = balance.subtract(amount);
+		} else {
+			throw new IllegalArgumentException("Insufficient balance");
+		}
+	}
+
+	public void credit(BigDecimal amount) {
+		balance = balance.add(amount);
+	}
 }

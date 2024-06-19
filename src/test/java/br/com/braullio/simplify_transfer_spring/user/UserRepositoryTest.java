@@ -1,8 +1,6 @@
 package br.com.braullio.simplify_transfer_spring.user;
 
 import java.math.BigDecimal;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,10 +25,10 @@ public class UserRepositoryTest {
 			new BigDecimal("50.00")
 		));
 
-		Optional<Payer> result = userRepository.findPayerById(savedPayer.getId());
+		Payer result = userRepository.findPayerById(savedPayer.getId());
 
-		assertThat(result.isPresent()).isTrue();
-		assertThat(result.get().getUserType()).isEqualTo(UserType.COMUM);
+		assertThat(result.getId()).isEqualTo(savedPayer.getId());
+		assertThat(result.getUserType()).isEqualTo(UserType.COMUM);
 	}
 
 	@Test
@@ -45,10 +43,10 @@ public class UserRepositoryTest {
 			new BigDecimal("50.00")
 		));
 
-		Optional<Payee> result = userRepository.findPayeeById(savedPayee.getId());
+		User result = userRepository.findPayeeById(savedPayee.getId());
 
-		assertThat(result.isPresent()).isTrue();
-		assertThat(result.get().getUserType()).isEqualTo(UserType.LOJISTA);
+		assertThat(result.getId()).isEqualTo(savedPayee.getId());
+		assertThat(result.getUserType()).isEqualTo(UserType.LOJISTA);
 	}
 
 	@Test
@@ -63,8 +61,8 @@ public class UserRepositoryTest {
 			new BigDecimal("50.00")
 		));
 
-		Optional<Payee> result = userRepository.findPayeeById(savedPayer.getId());
+		User result = userRepository.findPayeeById(savedPayer.getId());
 
-		assertThat(result.isPresent()).isFalse();
+		assertThat(result.getId()).isNotNull();
 	}
 }
