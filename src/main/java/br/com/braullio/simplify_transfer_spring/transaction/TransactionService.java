@@ -2,6 +2,8 @@ package br.com.braullio.simplify_transfer_spring.transaction;
 
 import br.com.braullio.simplify_transfer_spring.api.authoration.AuthorizationService;
 import br.com.braullio.simplify_transfer_spring.api.notification.NotificationService;
+import br.com.braullio.simplify_transfer_spring.exception.BadRequestException;
+import br.com.braullio.simplify_transfer_spring.exception.UserNotFoundException;
 import br.com.braullio.simplify_transfer_spring.user.Payer;
 import br.com.braullio.simplify_transfer_spring.user.User;
 import br.com.braullio.simplify_transfer_spring.user.UserRepository;
@@ -31,7 +33,7 @@ public class TransactionService {
 	@Transactional
 	public Transaction create(TransactionDTO transactionDTO) throws Exception {
 		if (transactionDTO.value().compareTo(BigDecimal.ZERO) == 0.0) {
-			throw new Exception("Value cannot be zero");
+			throw new BadRequestException("Value cannot be zero");
 		}
 
 		BigDecimal amount = transactionDTO.value();
@@ -62,7 +64,7 @@ public class TransactionService {
 	private Payer findPayerById(Long payerId) throws Exception {
 		Payer payer = userRepository.findPayerById(payerId);
 		if (payer == null) {
-			throw new Exception("Payer not found or not allowed");
+			throw new UserNotFoundException("Payer not found or type is 'LOJISTA'");
 		}
 		return payer;
 	}
@@ -70,7 +72,7 @@ public class TransactionService {
 	private User findPayeeById(Long payeeId) throws Exception {
 		User payee = userRepository.findPayeeById(payeeId);
 		if (payee == null) {
-			throw new Exception("Payee not found or not allowed");
+			throw new UserNotFoundException("Payee not found");
 		}
 		return payee;
 	}

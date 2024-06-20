@@ -1,6 +1,7 @@
 package br.com.braullio.simplify_transfer_spring.api.authoration;
 
 import br.com.braullio.simplify_transfer_spring.api.authoration.response.AuthorizationResponse;
+import br.com.braullio.simplify_transfer_spring.exception.UnauthorizedException;
 import br.com.braullio.simplify_transfer_spring.transaction.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Service
 public class AuthorizationService {
@@ -28,47 +26,41 @@ public class AuthorizationService {
 	}
 
 	public void call(Transaction transaction) {
-		try {
-			URI uri = buildAuthorizationUri(transaction);
-			WebClient webClient = webClientBuilder.baseUrl(uri.toString()).build();
+		String uri = buildAuthorizationUri(transaction);
+		WebClient webClient = webClientBuilder.baseUrl(uri).build();
 
-			Mono<ClientResponse> responseMono = webClient.get().exchange();
-			ClientResponse clientResponse = responseMono.block();
+		Mono<ClientResponse> responseMono = webClient.get().exchange();
+		ClientResponse clientResponse = responseMono.block();
 
-			if (clientResponse != null) {
-				HttpStatusCode statusCode = clientResponse.statusCode();
-				AuthorizationResponse responseBody = clientResponse.bodyToMono(AuthorizationResponse.class).block();
+		if (clientResponse != null) {
+			HttpStatusCode statusCode = clientResponse.statusCode();
+			AuthorizationResponse responseBody = clientResponse.bodyToMono(AuthorizationResponse.class).block();
 
-				if (statusCode == HttpStatus.OK) {
-					if (responseBody != null && responseBody.getData().isAuthorization()) {
-						LOGGER.info("Authorization successful for responseBody: {}", responseBody);
-						return;
-					}
-
-					LOGGER.warn("Authorization failed for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
-					throw new RuntimeException("Authorization failed");
+			if (statusCode == HttpStatus.OK) {
+				if (responseBody != null && responseBody.getData().isAuthorization()) {
+					LOGGER.info("Authorization successful for responseBody: {}", responseBody);
+					return;
 				}
 
-				if (statusCode == HttpStatus.FORBIDDEN) {
-					LOGGER.warn("Authorization failed for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
-					throw new RuntimeException("Authorization failed");
-				}
-
-				LOGGER.warn("StatusCode not trated Authorization failed for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
-				throw new RuntimeException("Authorization failed");
+				LOGGER.info("Unauthorized for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
+				throw new UnauthorizedException("Unauthorized");
 			}
 
-			throw new RuntimeException("Error during Authorization");
-		} catch (Exception e) {
-			throw new RuntimeException("Error during Authorization", e);
+			if (statusCode == HttpStatus.FORBIDDEN) {
+				LOGGER.warn("Unauthorized for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
+				throw new UnauthorizedException("Unauthorized");
+			}
+
+			LOGGER.error("StatusCode not trated Authorization for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
+			throw new UnauthorizedException("Unauthorized");
 		}
 	}
 
-	private URI buildAuthorizationUri(Transaction transaction) throws URISyntaxException {
+	private String buildAuthorizationUri(Transaction transaction) {
 		String uriString = URL_AUTH + "?amount=" + transaction.getAmount().doubleValue()
 				+ "&payerId=" + transaction.getPayer().getId()
 				+ "&payeeId=" + transaction.getPayee().getId();
 
-		return new URI(uriString);
+		return uriString;
 	}
 }

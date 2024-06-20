@@ -3,6 +3,7 @@ package br.com.braullio.simplify_transfer_spring.user;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import br.com.braullio.simplify_transfer_spring.exception.BadRequestException;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -77,7 +78,7 @@ public abstract class User {
 		if (balance.compareTo(amount) >= 0) {
 			balance = balance.subtract(amount);
 		} else {
-			throw new IllegalArgumentException("Insufficient balance");
+			throw new BadRequestException("Insufficient balance in Payer");
 		}
 	}
 

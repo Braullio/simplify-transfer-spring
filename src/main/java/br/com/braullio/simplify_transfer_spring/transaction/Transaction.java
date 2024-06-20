@@ -1,5 +1,6 @@
 package br.com.braullio.simplify_transfer_spring.transaction;
 
+import br.com.braullio.simplify_transfer_spring.exception.BadRequestException;
 import br.com.braullio.simplify_transfer_spring.user.Payer;
 import br.com.braullio.simplify_transfer_spring.user.User;
 import jakarta.persistence.*;
@@ -46,11 +47,7 @@ public class Transaction {
 
 	private void validade() throws Exception {
 		if (this.payer.getId().equals(this.payee.getId())) {
-			throw new Exception("Transaction no permitid!");
-		}
-
-		if (this.payee == null || this.payer == null) {
-			throw new Exception("Transaction payer or payee is null");
+			throw new BadRequestException("Transaction not allowed for the same payer");
 		}
 	}
 }
