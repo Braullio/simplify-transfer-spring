@@ -1,3 +1,5 @@
+.vscode
+.idea
 *#
 *.iml
 *.ipr
@@ -41,3 +43,4 @@ secrets.yml
 .sts4-cache
 .git-hooks/
 node_modules
+databases

@@ -24,7 +24,7 @@ Obs: separação da pontuação, pois isso e formatação
 
 ```sql
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id SERIAL PRIMARY KEY,
     user_type VARCHAR(10) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -39,15 +39,9 @@ CREATE TABLE IF NOT EXISTS users (
     -- Saldo
     balance NUMERIC(19, 2) DEFAULT 0.0,
 
-    -- Checagem de o usuario esta ativo
-    active BOOLEAN DEFAULT TRUE,
-
     -- Informacoes de criacao e atualizacao
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    -- Informacao de versionamento
-    version BIGINT DEFAULT 0,
 
     -- Configuracao para usar a funcao de validacao de CPF e CNPJ
     CONSTRAINT tax_number_valid CHECK (validate_tax_number(user_type, tax_number))
@@ -138,7 +132,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     payer BIGINT NOT NULL,
     payee BIGINT NOT NULL,
-    value NUMERIC(19, 2) NOT NULL,
+    amount NUMERIC(19, 2) NOT NULL,
 
     -- Regra para report para algumas estrategias futuras
     notified BOOLEAN DEFAULT FALSE,

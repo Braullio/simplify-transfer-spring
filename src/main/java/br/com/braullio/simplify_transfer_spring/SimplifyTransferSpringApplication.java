@@ -9,5 +9,4 @@ public class SimplifyTransferSpringApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SimplifyTransferSpringApplication.class, args);
 	}
-
 }
