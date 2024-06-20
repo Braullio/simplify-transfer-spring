@@ -8,6 +8,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("SELECT p FROM Payer p WHERE p.id = :id")
 	Payer findPayerById(@Param("id") Long id);
 
-    @Query("SELECT p FROM Payee p WHERE p.id = :id")
+    @Query("SELECT p FROM User p WHERE p.id = :id")
     User findPayeeById(@Param("id") Long id);
 }
