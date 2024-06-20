@@ -3,7 +3,8 @@ package br.com.braullio.simplify_transfer_spring.api.notification;
 import br.com.braullio.simplify_transfer_spring.api.notification.request.NotificationRequest;
 import br.com.braullio.simplify_transfer_spring.api.notification.response.NotificationResponse;
 import br.com.braullio.simplify_transfer_spring.exception.NotificationException;
-import br.com.braullio.simplify_transfer_spring.transaction.Transaction;
+import br.com.braullio.simplify_transfer_spring.kafka.KafkaProducerService;
+import br.com.braullio.simplify_transfer_spring.transaction.TransactionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,21 +21,27 @@ import reactor.core.publisher.Mono;
 public class NotificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(NotificationService.class);
 	private final WebClient.Builder webClientBuilder;
+	private final KafkaProducerService kafkaProducerService;
 
 	@Value("${simplify_transaction.notification.url}")
 	private String URL_NOTIFY;
 
-	public NotificationService(WebClient.Builder webClientBuilder) {
+	public NotificationService(WebClient.Builder webClientBuilder, KafkaProducerService kafkaProducer) {
 		this.webClientBuilder = webClientBuilder;
+		this.kafkaProducerService = kafkaProducer;
 	}
 
-	public void call(Transaction transaction) {
+	public void notify(TransactionDTO transactionDTO) {
+		kafkaProducerService.sendNotification(transactionDTO);
+	}
+
+	public void call(TransactionDTO transactionDTO) {
 		WebClient webClient = webClientBuilder.baseUrl(URL_NOTIFY).build();
 
 		NotificationRequest request = new NotificationRequest(
-				transaction.getAmount(),
-				transaction.getPayer().getId(),
-				transaction.getPayee().getId()
+				transactionDTO.value(),
+				transactionDTO.payer(),
+				transactionDTO.payee()
 		);
 
 		Mono<ClientResponse> responseMono = webClient.post()
@@ -49,17 +56,17 @@ public class NotificationService {
 
 			if (statusCode == HttpStatus.GATEWAY_TIMEOUT) {
 				NotificationResponse responseBody = clientResponse.bodyToMono(NotificationResponse.class).block();
-				LOGGER.warn("Notification failed for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
+				LOGGER.warn("Notification failed for transaction: {}, status code: {}, response body: {}", transactionDTO, statusCode, responseBody);
 				throw new NotificationException("Notification failed");
 			}
 
 			if (statusCode == HttpStatus.NO_CONTENT) {
-				LOGGER.info("Notification successful for transaction: {}", transaction);
+				LOGGER.info("Notification successful for transaction: {}", transactionDTO);
 				return;
 			}
 
 			String responseBody = clientResponse.bodyToMono(String.class).block();
-			LOGGER.warn("Notification failed for transaction: {} - Status code: {} - Response body: {}", transaction, statusCode, responseBody);
+			LOGGER.warn("Notification failed for transaction: {} - Status code: {} - Response body: {}", transactionDTO, statusCode, responseBody);
 			throw new NotificationException("Notification failed - Unexpected status code: " + statusCode);
 		}
 

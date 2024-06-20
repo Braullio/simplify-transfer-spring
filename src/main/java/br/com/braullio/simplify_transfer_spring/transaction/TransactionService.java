@@ -54,14 +54,14 @@ public class TransactionService {
 		authorizationService.call(transaction);
 
 		// notify kafka topic
-		notificationService.call(transaction);
+		notificationService.notify(transactionDTO);
 
 		LOGGER.info("transaction executed: {}", transaction);
 
 		return transaction;
 	}
 
-	private Payer findPayerById(Long payerId) throws Exception {
+	private Payer findPayerById(Long payerId) {
 		Payer payer = userRepository.findPayerById(payerId);
 		if (payer == null) {
 			throw new UserNotFoundException("Payer not found or type is 'LOJISTA'");
@@ -69,7 +69,7 @@ public class TransactionService {
 		return payer;
 	}
 
-	private User findPayeeById(Long payeeId) throws Exception {
+	private User findPayeeById(Long payeeId) {
 		User payee = userRepository.findPayeeById(payeeId);
 		if (payee == null) {
 			throw new UserNotFoundException("Payee not found");
