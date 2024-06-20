@@ -1,6 +1,7 @@
 package br.com.braullio.simplify_transfer_spring.config;
 
 import br.com.braullio.simplify_transfer_spring.exception.BadRequestException;
+import br.com.braullio.simplify_transfer_spring.exception.NotificationException;
 import br.com.braullio.simplify_transfer_spring.exception.UnauthorizedException;
 import br.com.braullio.simplify_transfer_spring.exception.UserNotFoundException;
 import br.com.braullio.simplify_transfer_spring.exception.errorResponse.ErrorResponseBuilder;
@@ -16,7 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(BadRequestException.class)
-	public ResponseEntity<Object> handleAllBadRequest(Exception ex) {
+	public ResponseEntity<Object> handleBadRequest(Exception ex) {
 		String errorMessage = ex.getMessage();
 		log.error(errorMessage, ex);
 
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		log.error(errorMessage, ex);
 
 		return ErrorResponseBuilder.builder()
-				.status(HttpStatus.BAD_REQUEST)
+				.status(HttpStatus.UNAUTHORIZED)
 				.message(errorMessage)
 				.build();
 	}
@@ -44,6 +45,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 		return ErrorResponseBuilder.builder()
 				.status(HttpStatus.NOT_FOUND)
+				.message(errorMessage)
+				.build();
+	}
+
+	@ExceptionHandler(NotificationException.class)
+	public ResponseEntity<Object> handleNotificationError(Exception ex) {
+		String errorMessage = ex.getMessage();
+		log.error(errorMessage, ex);
+
+		return ErrorResponseBuilder.builder()
+				.status(HttpStatus.BAD_REQUEST)
 				.message(errorMessage)
 				.build();
 	}

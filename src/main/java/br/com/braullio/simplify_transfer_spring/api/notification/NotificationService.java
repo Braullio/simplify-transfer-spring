@@ -2,6 +2,7 @@ package br.com.braullio.simplify_transfer_spring.api.notification;
 
 import br.com.braullio.simplify_transfer_spring.api.notification.request.NotificationRequest;
 import br.com.braullio.simplify_transfer_spring.api.notification.response.NotificationResponse;
+import br.com.braullio.simplify_transfer_spring.exception.NotificationException;
 import br.com.braullio.simplify_transfer_spring.transaction.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,42 +31,38 @@ public class NotificationService {
 	public void call(Transaction transaction) {
 		WebClient webClient = webClientBuilder.baseUrl(URL_NOTIFY).build();
 
-		try {
-			NotificationRequest request = new NotificationRequest(
-					transaction.getAmount(),
-					transaction.getPayer().getId(),
-					transaction.getPayee().getId()
-			);
+		NotificationRequest request = new NotificationRequest(
+				transaction.getAmount(),
+				transaction.getPayer().getId(),
+				transaction.getPayee().getId()
+		);
 
-			Mono<ClientResponse> responseMono = webClient.post()
-					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-					.bodyValue(request)
-					.exchange();
+		Mono<ClientResponse> responseMono = webClient.post()
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+				.bodyValue(request)
+				.exchange();
 
-			ClientResponse clientResponse = responseMono.block();
+		ClientResponse clientResponse = responseMono.block();
 
-			if (clientResponse != null) {
-				HttpStatusCode statusCode = clientResponse.statusCode();
+		if (clientResponse != null) {
+			HttpStatusCode statusCode = clientResponse.statusCode();
 
-				if (statusCode == HttpStatus.GATEWAY_TIMEOUT) {
-					NotificationResponse responseBody = clientResponse.bodyToMono(NotificationResponse.class).block();
-					LOGGER.warn("Notification failed for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
-					throw new RuntimeException("Authorization failed");
-				}
-
-				if (statusCode == HttpStatus.NO_CONTENT) {
-					LOGGER.info("Notification successful for transaction: {}", transaction);
-					return;
-				}
-
-				String responseBody = clientResponse.bodyToMono(String.class).block();
-				LOGGER.warn("Notification failed for transaction: {} - Status code: {} - Response body: {}", transaction, statusCode, responseBody);
-				throw new RuntimeException("Notification failed - Unexpected status code: " + statusCode);
+			if (statusCode == HttpStatus.GATEWAY_TIMEOUT) {
+				NotificationResponse responseBody = clientResponse.bodyToMono(NotificationResponse.class).block();
+				LOGGER.warn("Notification failed for transaction: {}, status code: {}, response body: {}", transaction, statusCode, responseBody);
+				throw new NotificationException("Notification failed");
 			}
 
-			throw new RuntimeException("Error during Notification");
-		} catch (Exception e) {
-			throw new RuntimeException("Error during notification", e);
+			if (statusCode == HttpStatus.NO_CONTENT) {
+				LOGGER.info("Notification successful for transaction: {}", transaction);
+				return;
+			}
+
+			String responseBody = clientResponse.bodyToMono(String.class).block();
+			LOGGER.warn("Notification failed for transaction: {} - Status code: {} - Response body: {}", transaction, statusCode, responseBody);
+			throw new NotificationException("Notification failed - Unexpected status code: " + statusCode);
 		}
+
+		throw new NotificationException("Error during Notification");
 	}
 }
