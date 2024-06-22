@@ -1,5 +1,6 @@
 package br.com.braullio.simplify_transfer_spring.transaction;
 
+import br.com.braullio.simplify_transfer_spring.transaction.request.TransactionRequest;
 import br.com.braullio.simplify_transfer_spring.transaction.response.TransactionResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,8 +18,8 @@ public class TransactionController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<TransactionResponse> createPost(@Valid @RequestBody TransactionDTO transactionDTO) throws Exception {
-		Transaction transaction = transactionService.create(transactionDTO);
+	public ResponseEntity<TransactionResponse> createPost(@Valid @RequestBody TransactionRequest transactionRequest) throws Exception {
+		Transaction transaction = transactionService.create(transactionRequest);
 		TransactionResponse response = new TransactionResponse(transaction);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
