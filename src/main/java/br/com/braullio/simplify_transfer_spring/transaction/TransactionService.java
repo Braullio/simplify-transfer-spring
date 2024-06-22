@@ -4,6 +4,7 @@ import br.com.braullio.simplify_transfer_spring.api.authoration.AuthorizationSer
 import br.com.braullio.simplify_transfer_spring.api.notification.NotificationService;
 import br.com.braullio.simplify_transfer_spring.exception.BadRequestException;
 import br.com.braullio.simplify_transfer_spring.exception.UserNotFoundException;
+import br.com.braullio.simplify_transfer_spring.transaction.request.TransactionRequest;
 import br.com.braullio.simplify_transfer_spring.user.Payer;
 import br.com.braullio.simplify_transfer_spring.user.User;
 import br.com.braullio.simplify_transfer_spring.user.UserRepository;
@@ -31,15 +32,15 @@ public class TransactionService {
 	}
 
 	@Transactional
-	public Transaction create(TransactionDTO transactionDTO) throws Exception {
-		if (transactionDTO.value().compareTo(BigDecimal.ZERO) == 0.0) {
+	public Transaction create(TransactionRequest transactionRequest) throws Exception {
+		if (transactionRequest.value().compareTo(BigDecimal.ZERO) == 0.0) {
 			throw new BadRequestException("Value cannot be zero");
 		}
 
-		BigDecimal amount = transactionDTO.value();
+		BigDecimal amount = transactionRequest.value();
 
-		Payer payer = findPayerById(transactionDTO.payer());
-		User payee = findPayeeById(transactionDTO.payee());
+		Payer payer = findPayerById(transactionRequest.payer());
+		User payee = findPayeeById(transactionRequest.payee());
 
 		Transaction transaction = new Transaction(amount, payer, payee);
 
@@ -54,7 +55,7 @@ public class TransactionService {
 		authorizationService.call(transaction);
 
 		// notify kafka topic
-		notificationService.notify(transactionDTO);
+		notificationService.notify(transactionRequest);
 
 		LOGGER.info("transaction executed: {}", transaction);
 

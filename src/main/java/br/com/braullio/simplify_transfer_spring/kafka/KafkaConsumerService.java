@@ -1,7 +1,7 @@
 package br.com.braullio.simplify_transfer_spring.kafka;
 
 import br.com.braullio.simplify_transfer_spring.api.notification.NotificationService;
-import br.com.braullio.simplify_transfer_spring.transaction.TransactionDTO;
+import br.com.braullio.simplify_transfer_spring.transaction.request.TransactionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -31,8 +31,8 @@ public class KafkaConsumerService {
 			topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE,
 			dltStrategy = DltStrategy.FAIL_ON_ERROR
 	)
-	public void receiveNotification(TransactionDTO transactionDTO) {
-		LOGGER.info("Notifying transaction {}...", transactionDTO);
-		notificationService.call(transactionDTO);
+	public void receiveNotification(TransactionRequest transactionRequest) {
+		LOGGER.info("Notifying transaction {}...", transactionRequest);
+		notificationService.call(transactionRequest);
 	}
 }
